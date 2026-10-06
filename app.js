@@ -48,6 +48,68 @@ function calcularRacha(sesiones) {
   return racha;
 }
 
+// Calcula la mejor racha histórica: la racha más larga conseguida nunca.
+// Se recalcula siempre a partir de las sesiones; no se guarda aparte.
+function calcularMejorRacha(sesiones) {
+  var hoy = aFechaLocal(new Date());
+
+  // Juntamos los días únicos con sesión que no sean futuros
+  var dias = {};
+  for (var i = 0; i < sesiones.length; i++) {
+    if (sesiones[i].fecha <= hoy) {
+      dias[sesiones[i].fecha] = true;
+    }
+  }
+  var diasOrdenados = Object.keys(dias).sort();
+
+  // Recorremos buscando rachas de días consecutivos
+  var mejor = 0;
+  var actual = 0;
+  var anterior = null;
+  for (var j = 0; j < diasOrdenados.length; j++) {
+    if (anterior !== null) {
+      // ¿Este día es justo el siguiente del anterior?
+      var partes = anterior.split("-");
+      var fechaAnterior = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+      fechaAnterior.setDate(fechaAnterior.getDate() + 1);
+      if (aFechaLocal(fechaAnterior) === diasOrdenados[j]) {
+        actual++;
+      } else {
+        actual = 1;
+      }
+    } else {
+      actual = 1;
+    }
+    if (actual > mejor) {
+      mejor = actual;
+    }
+    anterior = diasOrdenados[j];
+  }
+  return mejor;
+}
+
+// Suma los minutos estudiados esta semana (de lunes a hoy, en fecha local)
+function calcularMinutosSemana(sesiones) {
+  var hoyFecha = new Date();
+  var hoy = aFechaLocal(hoyFecha);
+
+  // getDay() devuelve 0 para domingo, 1 para lunes... Calculamos cuántos días han pasado desde el lunes
+  var diasDesdeLunes = (hoyFecha.getDay() + 6) % 7;
+  var lunesFecha = new Date();
+  lunesFecha.setDate(lunesFecha.getDate() - diasDesdeLunes);
+  var lunes = aFechaLocal(lunesFecha);
+
+  // Las fechas "YYYY-MM-DD" se pueden comparar como texto
+  var total = 0;
+  for (var i = 0; i < sesiones.length; i++) {
+    var fecha = sesiones[i].fecha;
+    if (fecha >= lunes && fecha <= hoy) {
+      total += sesiones[i].minutos;
+    }
+  }
+  return total;
+}
+
 // Convierte "YYYY-MM-DD" a un texto bonito en español, ej. "5 oct 2026"
 function formatearFecha(fechaTexto) {
   var partes = fechaTexto.split("-");
@@ -57,8 +119,9 @@ function formatearFecha(fechaTexto) {
 
 // Pintar la racha en pantalla
 function mostrarRacha(sesiones) {
-  var elemento = document.getElementById("rachaNumero");
-  elemento.textContent = calcularRacha(sesiones);
+  document.getElementById("rachaNumero").textContent = calcularRacha(sesiones);
+  document.getElementById("mejorRacha").textContent = calcularMejorRacha(sesiones);
+  document.getElementById("minutosSemana").textContent = calcularMinutosSemana(sesiones);
 }
 
 // Pintar la lista de sesiones, de la más reciente a la más antigua

@@ -50,6 +50,13 @@ h2 {
   color: #6b7280;
 }
 
+.mejor-racha,
+.minutos-semana {
+  margin-top: 8px;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
 form {
   display: flex;
   flex-direction: column;

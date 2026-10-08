@@ -110,6 +110,22 @@ function calcularMinutosSemana(sesiones) {
   return total;
 }
 
+// Cuenta los días distintos con sesión en el mes actual (fecha local).
+// Varias sesiones el mismo día cuentan una sola vez; las fechas futuras se ignoran.
+function calcularDiasMes(sesiones) {
+  var hoy = aFechaLocal(new Date());
+  var mesActual = hoy.slice(0, 7); // "AAAA-MM"
+
+  var diasConSesion = {};
+  for (var i = 0; i < sesiones.length; i++) {
+    var fecha = sesiones[i].fecha;
+    if (fecha.slice(0, 7) === mesActual && fecha <= hoy) {
+      diasConSesion[fecha] = true;
+    }
+  }
+  return Object.keys(diasConSesion).length;
+}
+
 // Convierte "YYYY-MM-DD" a un texto bonito en español, ej. "5 oct 2026"
 function formatearFecha(fechaTexto) {
   var partes = fechaTexto.split("-");
@@ -122,6 +138,7 @@ function mostrarRacha(sesiones) {
   document.getElementById("rachaNumero").textContent = calcularRacha(sesiones);
   document.getElementById("mejorRacha").textContent = calcularMejorRacha(sesiones);
   document.getElementById("minutosSemana").textContent = calcularMinutosSemana(sesiones);
+  document.getElementById("diasMes").textContent = calcularDiasMes(sesiones);
 }
 
 // Pintar la lista de sesiones, de la más reciente a la más antigua
